@@ -42,3 +42,22 @@ CREATE TABLE reservas IF NOT EXISTS (
     FOREIGN KEY (livroID) REFERENCES livros(livroID),
     FOREIGN KEY (userID) REFERENCES users(userID)
 );
+
+
+--Functions
+
+
+CREATE OR REPLACE FUNCTION calcular_multa(data_devolucao DATE, data_devolucao_programada DATE) 
+RETURNS DECIMAL(10, 2)
+BEGIN
+    DECLARE multa DECIMAL(10, 2);
+    
+    IF data_devolucao > data_devolucao_programada THEN
+        SET multa = DATEDIFF(data_devolucao, data_devolucao_programada) * 2.00; -- multa diária R$2.00
+    ELSE
+        SET multa = 0.00;
+    END IF;
+    
+    RETURN multa;
+END;
+$$ LANGUAGE plpgsql;
