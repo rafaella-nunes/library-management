@@ -60,4 +60,22 @@ BEGIN
     
     RETURN multa;
 END;
-$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION gerar_relatorio_atrasados() RETURNS TABLE
+BEGIN
+    RETURN (
+        SELECT 
+            E.id,
+            U.nome AS nome_usuario,
+            L.titulo AS titulo_livro,
+            E.emprestimos.data_emprestimo,
+            E.emprestimos.data_devolucao_programada,
+            E.emprestimos.data_devolucao,
+            E.emprestimos.status
+        FROM emprestimos E
+        JOIN users U ON E.user_id = U.id
+        JOIN livros L ON E.livro_id = L.id
+        WHERE E.status = 'Atrasado'
+    );
+END;
+
