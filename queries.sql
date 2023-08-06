@@ -131,5 +131,19 @@ BEGIN
     END IF;
 END;
 
+CREATE VIEW livros_emprestados AS
+SELECT
+    E.id,
+    L.titulo AS titulo_livro,
+    A.nome AS nome_autor,
+    U.nome AS nome_user,
+    E.data_emprestimo,
+    E.data_devolucao_programada,
+    E.status
+FROM emprestimos E
+JOIN livros L ON E.livroID = L.id
+JOIN autores A ON L.autorID = A.id
+JOIN usuarios U ON E.userID = U.id
+WHERE E.status = 'Emprestado';
 
 
