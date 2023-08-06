@@ -56,6 +56,7 @@ CREATE TABLE notificacoes IF NOT EXISTS (
 
 --Functions
 
+$$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION calcular_multa(data_devolucao DATE, data_devolucao_programada DATE) 
 RETURNS DECIMAL(10, 2)
@@ -103,5 +104,32 @@ BEGIN
     
     RETURN NOT disponivel;
 END;
+
+--Trigger
+
+CREATE TRIGGER att_lista_espera
+AFTER UPDATE ON emprestimos
+FOR EACH ROW
+BEGIN
+    IF NEW.status = 'Devolvido' THEN
+        -- verificando se há reservas pendentes para o livro
+        DECLARE livroID INT;
+        DECLARE userID INT;
+        
+        SET livroID = NEW.emprestimos.livroID;
+        
+        SELECT userID INTO userID
+        FROM reservas
+        WHERE livroID = livroID
+        ORDER BY data_reserva
+        LIMIT 1;
+        
+        IF userID IS NOT NULL THEN
+            -- Enviar notificação para o próximo usuário (envio de e-mail)
+            INSERT INTO notificacoes (userID, mensagem, data_envio) VALUES (userID, 'O livro que você reservou está disponível.', NOW());
+        END IF;
+    END IF;
+END;
+
 
 
