@@ -61,7 +61,8 @@ BEGIN
     RETURN multa;
 END;
 
-CREATE OR REPLACE FUNCTION gerar_relatorio_atrasados() RETURNS TABLE
+CREATE OR REPLACE FUNCTION gerar_relatorio_atrasados() 
+RETURNS TABLE
 BEGIN
     RETURN (
         SELECT 
@@ -78,4 +79,19 @@ BEGIN
         WHERE E.status = 'Atrasado'
     );
 END;
+
+
+CREATE OR REPLACE FUNCTION verificar_disponibilidade(livros.id INT) 
+RETURNS BOOLEAN
+BEGIN
+    DECLARE disponivel BOOLEAN;
+    
+    SELECT COUNT(*)
+    INTO disponivel
+    FROM emprestimos
+    WHERE livro.id = livro.id AND Status = 'Emprestado';
+    
+    RETURN NOT disponivel;
+END;
+
 
