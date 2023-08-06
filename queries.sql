@@ -44,6 +44,16 @@ CREATE TABLE reservas IF NOT EXISTS (
 );
 
 
+CREATE TABLE notificacoes IF NOT EXISTS (
+    notificacaoID INT PRIMARY KEY AUTO_INCREMENT,
+    userID INT,
+    mensagem TEXT,
+    data_envio DATETIME,
+    FOREIGN KEY (userID) REFERENCES users(id)
+);
+
+
+
 --Functions
 
 
