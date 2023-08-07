@@ -58,8 +58,7 @@
 
 
 CREATE OR REPLACE FUNCTION calcular_multa(data_devolucao DATE, data_devolucao_programada DATE) 
-RETURNS DECIMAL(10, 2);
-$$
+RETURNS DECIMAL(10, 2) AS $$
 BEGIN
     DECLARE multa DECIMAL(10, 2);
     
@@ -74,28 +73,8 @@ END;
 $$
 LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION gerar_relatorio_atrasados() 
-RETURNS TABLE
-BEGIN
-    RETURN (
-        SELECT 
-            E.id,
-            U.nome AS nome_usuario,
-            L.titulo AS titulo_livro,
-            E.emprestimos.data_emprestimo,
-            E.emprestimos.data_devolucao_programada,
-            E.emprestimos.data_devolucao,
-            E.emprestimos.status
-        FROM emprestimos E
-        JOIN users U ON E.user_id = U.id
-        JOIN livros L ON E.livro_id = L.id
-        WHERE E.status = 'Atrasado'
-    );
-END;
-
-
-CREATE OR REPLACE FUNCTION verificar_disponibilidade(livros.id INT) 
-RETURNS BOOLEAN
+CREATE OR REPLACE FUNCTION verificar_disponibilidade(livros.id) 
+RETURNS BOOLEAN AS $$
 BEGIN
     DECLARE disponivel BOOLEAN;
     
@@ -111,9 +90,8 @@ LANGUAGE plpgsql;
 
 --Trigger
 
-CREATE TRIGGER att_lista_espera
-AFTER UPDATE ON emprestimos
-FOR EACH ROW
+CREATE OR REPLACE FUNCTION att_espera()
+RETURNS TRIGGER AS $$
 BEGIN
     IF NEW.status = 'Devolvido' THEN
         -- verificando se há reservas pendentes para o livro
@@ -134,6 +112,14 @@ BEGIN
         END IF;
     END IF;
 END;
+$$
+LANGUAGE plpgsql;
+--Trigger
+
+CREATE TRIGGER att_lista_espera
+AFTER UPDATE ON emprestimos
+EXECUTE FUNCTION att_espera();
+
 
 CREATE OR REPLACE VIEW livros_emprestados AS
 SELECT
