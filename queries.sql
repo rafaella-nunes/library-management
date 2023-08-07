@@ -1,9 +1,9 @@
-CREATE TABLE autores IF NOT EXISTS (
+ CREATE TABLE IF NOT EXISTS autores (
     id INT PRIMARY KEY,
-    nome VARCHAR(255),
+    nome VARCHAR(255)
 );
 
-CREATE TABLE livros IF NOT EXISTS (
+  CREATE TABLE IF NOT EXISTS livros (
     id INT PRIMARY KEY,
     titulo VARCHAR(255),
     autorID INT,
@@ -13,7 +13,7 @@ CREATE TABLE livros IF NOT EXISTS (
     FOREIGN KEY (autorID) REFERENCES autores(autorID)
 );
 
-CREATE TABLE users IF NOT EXISTS (
+ CREATE TABLE IF NOT EXISTS users (
     id INT PRIMARY KEY,
     nome VARCHAR(255),
     email VARCHAR(255),
@@ -21,7 +21,7 @@ CREATE TABLE users IF NOT EXISTS (
     data_cadastro DATE
 );
 
-CREATE TABLE emprestimos IF NOT EXISTS (
+ CREATE TABLE IF NOT EXISTS emprestimos (
     id INT PRIMARY KEY,
     livroID INT,
     userID INT,
@@ -33,7 +33,7 @@ CREATE TABLE emprestimos IF NOT EXISTS (
     FOREIGN KEY (userID) REFERENCES users(userID)
 );
 
-CREATE TABLE reservas IF NOT EXISTS (
+ CREATE TABLE IF NOT EXISTS reservas (
     id INT PRIMARY KEY,
     livroID INT,
     userID INT,
@@ -44,8 +44,8 @@ CREATE TABLE reservas IF NOT EXISTS (
 );
 
 
-CREATE TABLE notificacoes IF NOT EXISTS (
-    notificacaoID INT PRIMARY KEY AUTO_INCREMENT,
+ CREATE TABLE IF NOT EXISTS notificacoes (
+    notificacaoID SERIAL,
     userID INT,
     mensagem TEXT,
     data_envio DATETIME,
@@ -56,10 +56,10 @@ CREATE TABLE notificacoes IF NOT EXISTS (
 
 --Functions
 
-$$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION calcular_multa(data_devolucao DATE, data_devolucao_programada DATE) 
-RETURNS DECIMAL(10, 2)
+RETURNS DECIMAL(10, 2);
+$$
 BEGIN
     DECLARE multa DECIMAL(10, 2);
     
@@ -71,6 +71,8 @@ BEGIN
     
     RETURN multa;
 END;
+$$
+LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION gerar_relatorio_atrasados() 
 RETURNS TABLE
@@ -104,6 +106,8 @@ BEGIN
     
     RETURN NOT disponivel;
 END;
+$$ 
+LANGUAGE plpgsql;
 
 --Trigger
 
@@ -131,7 +135,7 @@ BEGIN
     END IF;
 END;
 
-CREATE VIEW livros_emprestados AS
+CREATE OR REPLACE VIEW livros_emprestados AS
 SELECT
     E.id,
     L.titulo AS titulo_livro,
