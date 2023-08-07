@@ -10,7 +10,7 @@
     genero VARCHAR(100),
     ano_publicacao INT,
     ISBN VARCHAR(20),
-    FOREIGN KEY (autorID) REFERENCES autores(autorID)
+    FOREIGN KEY (autorID) REFERENCES autores(id)
 );
 
  CREATE TABLE IF NOT EXISTS users (
@@ -29,8 +29,8 @@
     data_devolucao_programada DATE,
     data_devolucao DATE,
     status VARCHAR(50),
-    FOREIGN KEY (livroID) REFERENCES livros(livroID),
-    FOREIGN KEY (userID) REFERENCES users(userID)
+    FOREIGN KEY (livroID) REFERENCES livros(id),
+    FOREIGN KEY (userID) REFERENCES users(id)
 );
 
  CREATE TABLE IF NOT EXISTS reservas (
@@ -39,8 +39,8 @@
     userID INT,
     data_reserva DATE,
     data_disponivel DATE,
-    FOREIGN KEY (livroID) REFERENCES livros(livroID),
-    FOREIGN KEY (userID) REFERENCES users(userID)
+    FOREIGN KEY (livroID) REFERENCES livros(id),
+    FOREIGN KEY (userID) REFERENCES users(id)
 );
 
 
@@ -48,47 +48,27 @@
     notificacaoID SERIAL,
     userID INT,
     mensagem TEXT,
-    data_envio DATETIME,
+    data_envio DATE,
     FOREIGN KEY (userID) REFERENCES users(id)
 );
 
+--Function
 
-
---Functions
-
-
-CREATE OR REPLACE FUNCTION calcular_multa(data_devolucao DATE, data_devolucao_programada DATE) 
-RETURNS DECIMAL(10, 2) AS $$
-BEGIN
-    DECLARE multa DECIMAL(10, 2);
-    
-    IF data_devolucao > data_devolucao_programada THEN
-        SET multa = DATEDIFF(data_devolucao, data_devolucao_programada) * 2.00; -- multa diária R$2.00
-    ELSE
-        SET multa = 0.00;
-    END IF;
-    
-    RETURN multa;
-END;
-$$
-LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION verificar_disponibilidade(livros.id) 
+CREATE OR REPLACE FUNCTION verificar_disponibilidade(livroID INT) 
 RETURNS BOOLEAN AS $$
 BEGIN
     DECLARE disponivel BOOLEAN;
+	DECLARE cnt INTEGER;
     
-    SELECT COUNT(*)
-    INTO disponivel
+    SELECT INTO disponivel
+	cnt COUNT(*)
     FROM emprestimos
-    WHERE livro.id = livro.id AND Status = 'Emprestado';
+    WHERE livroID = livroID AND Status = 'Emprestado';
     
     RETURN NOT disponivel;
 END;
 $$ 
 LANGUAGE plpgsql;
-
---Trigger
 
 CREATE OR REPLACE FUNCTION att_espera()
 RETURNS TRIGGER AS $$
@@ -114,6 +94,8 @@ BEGIN
 END;
 $$
 LANGUAGE plpgsql;
+
+
 --Trigger
 
 CREATE TRIGGER att_lista_espera
