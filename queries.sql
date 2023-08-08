@@ -56,12 +56,12 @@
 
 CREATE OR REPLACE FUNCTION verificar_disponibilidade(livroID INT) 
 RETURNS BOOLEAN AS $$
+DECLARE disponivel BOOLEAN;
+DECLARE cnt INTEGER;
+
 BEGIN
-    DECLARE disponivel BOOLEAN;
-	DECLARE cnt INTEGER;
-    
     SELECT INTO disponivel
-	cnt COUNT(*)
+	COUNT(*)
     FROM emprestimos
     WHERE livroID = livroID AND Status = 'Emprestado';
     
@@ -72,13 +72,11 @@ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION att_espera()
 RETURNS TRIGGER AS $$
+DECLARE livroID INT;
+DECLARE userID INT;
 BEGIN
     IF NEW.status = 'Devolvido' THEN
-        -- verificando se há reservas pendentes para o livro
-        DECLARE livroID INT;
-        DECLARE userID INT;
-        
-        SET livroID = NEW.emprestimos.livroID;
+        SET livroID = NEW.livroID;
         
         SELECT userID INTO userID
         FROM reservas
@@ -87,7 +85,7 @@ BEGIN
         LIMIT 1;
         
         IF userID IS NOT NULL THEN
-            -- Enviar notificação para o próximo usuário (envio de e-mail)
+            -- Enviar notificação para o próximo usuario
             INSERT INTO notificacoes (userID, mensagem, data_envio) VALUES (userID, 'O livro que você reservou está disponível.', NOW());
         END IF;
     END IF;
