@@ -60,8 +60,8 @@ DECLARE
     cnt INTEGER;
 BEGIN
     SELECT COUNT(*) INTO cnt
-    FROM emprestimos
-    WHERE livroID = livroID AND status = 'Emprestado';
+    FROM emprestimos AS E
+    WHERE E.livroID = livroID AND E.status = 'Emprestado';
     
     disponivel := NOT cnt > 0;
     
